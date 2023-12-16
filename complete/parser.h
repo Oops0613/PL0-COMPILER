@@ -374,7 +374,7 @@ void listcode(int from, int to)
     printf("listcode:\n");
     for (int i = from; i < to; i++)
     {
-        //printf("%5d %s\t%d\t%d\n", i, mnemonic[code[i].f], code[i].l, code[i].a);
+        printf("%5d %s\t%d\t%d\n", i, mnemonic[code[i].f], code[i].l, code[i].a);
         p=mnemonic[code[i].f];
         if(strcmp(p,"JMP")==0){//无条件跳转
             fprintf(fw,"%d ",c_cnt++);
