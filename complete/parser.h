@@ -85,10 +85,10 @@ void variable(void)
     }
 }
 
-// 生成汇编指令 (generates (assembles) an instruction.)
+// 生成类汇编指令（基于栈）
 void gen(int x, int y, int z)
-{ //生成汇编指令
-    if (cx > CXMAX)
+{
+    if (cx > CXMAX)//指令条数太多
     { // cx > 500
         printf("Fatal Error: Program too long.\n");
         exit(1);
@@ -171,11 +171,11 @@ void term()
         factor();
         if (mulop == SYM_TIMES)
         {
-            gen(OPR, 0, OPR_MUL); // 将栈顶和次栈顶进行运算
+            gen(OPR, 0, OPR_MUL); // 将栈顶和次栈顶进行乘运算
         }
         else
         {
-            gen(OPR, 0, OPR_DIV);
+            gen(OPR, 0, OPR_DIV);//除
         }
     }
 }
@@ -183,7 +183,7 @@ void term()
 // <表达式>→[+|-]项|<表达式><加法运算符><项>
 void expression()
 {
-    int addop;
+    int addop;//正负号
     if (sym == SYM_PLUS || sym == SYM_MINUS)
     {
         addop = sym;
@@ -191,7 +191,7 @@ void expression()
         factor();
         if (addop == SYM_MINUS)
         {
-            gen(OPR, 0, OPR_NEG);
+            gen(OPR, 0, OPR_NEG);//取相反数
         }
         term();
     }
@@ -206,11 +206,11 @@ void expression()
         term();
         if (addop == SYM_PLUS)
         {
-            gen(OPR, 0, OPR_ADD);
+            gen(OPR, 0, OPR_ADD);//加
         }
         else
         {
-            gen(OPR, 0, OPR_MIN);
+            gen(OPR, 0, OPR_MIN);//减
         }
     }
 }
@@ -228,7 +228,7 @@ void condition()
         case SYM_EQU: //==
             gen(OPR, 0, OPR_EQU);
             break;
-        case SYM_NEQ: //!=
+        case SYM_NEQ: //<>
             gen(OPR, 0, OPR_NEQ);
             break;
         case SYM_LES: //<
@@ -244,7 +244,7 @@ void condition()
             gen(OPR, 0, OPR_GEQ);
             break;
         default:
-            error(20);
+            error(20);//缺少运算符
         }
 }
 
@@ -295,7 +295,7 @@ void statement()
         savedCx = cx;
         gen(JPC, 0, 0);   // 条件转移指令，栈顶为非真时跳转到a
         statement();      // 递归调用
-        code[savedCx].a = cx; // 设置刚刚那个条件转移指令的跳转位置
+        code[savedCx].a = cx; // 设置刚刚那个条件转移指令的跳转位置（回填）
     }
     else if (sym == SYM_BEGIN)
     { //<复合语句>→BEGIN<语句>{；<语句>}END
@@ -339,8 +339,8 @@ void statement()
             error(18); // 'do' expected.
         }
         statement();          // 分析do后的语句块
-        gen(JMP, 0, savedCx); // 无条件转移指令，跳转到cx1，再次进行逻辑判断
-        code[savedCx_].a = cx; // 填写刚才那个条件转移指令的跳转位置，while循环结束
+        gen(JMP, 0, savedCx); // 无条件转移指令，跳转到cx1（while的起始），再次进行逻辑判断
+        code[savedCx_].a = cx; // 回填刚才那个条件转移指令的跳转位置，while循环结束
     }
 }
 //供条件跳转使用
@@ -381,22 +381,6 @@ void listcode(int from, int to)
             fprintf(fw,"(j,_,_,%d)\n",mapping(map,code[i].a));
         }
         else if(strcmp(p,"LIT")==0){//把常数放到栈顶（准备运算）
-            // if(strcmp(mnemonic[code[i-1].f],"OPR")==0){//还未结束，只计算了表达式的一部分
-            //     printf("(%s,",opr);
-            //     if((args[1].kind==1)){//变量
-            //         printf("t%d,",temp[args[1].value]);
-            //     }
-            //     else{//常量
-            //         printf("%d,",args[1].value);
-            //     }
-            //     if((args[2].kind==1)){//变量
-            //         printf("t%d,",temp[args[2].value]);
-            //     }
-            //     else{//常量
-            //         printf("%d,",args[2].value);
-            //     }
-            //     if()
-            // }
             if(cur>2){
                 cur=2;
                 args[1].value=args[2].value;
@@ -481,26 +465,14 @@ void listcode(int from, int to)
             default:
                 break;
             }
-            // printf("\tt%d\t%d",args[1],args[2]);
-            // if(strcmp(mnemonic[code[i+1].f],"STO")==0){
-            //     printf("\tt%d",code[i+1].a);
-            // }
-            // else if(strcmp(mnemonic[code[i+1].f],"JPC")==0){
-            //     printf("\t%d",code[i+1].a);
-            // }
-            // printf("\n");
         }
-        // if(cur_index==-1){
-        //     cur_index=1;
-        // }
     }
     fprintf(fw,"\n");
 }
-
+//代码有多层时使用
 int base(int stack[], int currentLevel, int levelDiff)
 {
     int b = currentLevel;
-
     while (levelDiff--)
         b = stack[b];
     return b;
@@ -510,7 +482,7 @@ void interpret()
 {
     int pc = 0;           // program counter
     int stack[STACKSIZE]; // 假想栈
-    int top = 0;          // top of stack
+    int top = 0;          // 栈顶指针
     int b = 1;
     instruction i; // instruction register
 
