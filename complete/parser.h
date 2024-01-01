@@ -120,7 +120,7 @@ void factor()
             switch (table[i].kind)
             {
             case ID_CONSTANT:
-                gen(LIT, 0, table[i].value); // 把常数放到栈顶
+                gen(LIT, 0, table[i].value); // 把常量放到栈顶
                 printf("%s\n",id);
                 break;
             case ID_VARIABLE:
@@ -139,15 +139,12 @@ void factor()
             num = 0;
         }
         gen(LIT, 0, num); // 把常数放到栈顶
-        //int index=locate(id);
-        printf("%s\n",id);
-        //table[index].value=num;
         getsym();
     }
     else if (sym == SYM_LPAREN) // (
     {
         getsym();
-        expression();          // 递归调用表达式
+        expression();          
         if (sym == SYM_RPAREN) // )
         {
             getsym();
@@ -298,7 +295,7 @@ void statement()
         code[savedCx].a = cx; // 设置刚刚那个条件转移指令的跳转位置（回填）
     }
     else if (sym == SYM_BEGIN)
-    { //<复合语句>→BEGIN<语句>{；<语句>}END
+    { //<复合语句>→BEGIN<语句>{;<语句>}END
         getsym();
         statement(); // 递归调用
         while (sym == SYM_SEMICOLON)
@@ -428,6 +425,9 @@ void listcode(int from, int to)
                 }
                 
             }
+            else if(strcmp(mnemonic[code[i-1].f],"LOD")==0){//变量:=变量
+                fprintf(fw,"(=,t%d,_,t%d)\n",temp[code[i-1].a],temp[code[i].a]);
+            }
         }
         else if(strcmp(p,"OPR")==0){
             switch (code[i].a)
@@ -469,7 +469,7 @@ void listcode(int from, int to)
     }
     fprintf(fw,"\n");
 }
-//代码有多层时使用
+//代码有多层时使用（实际情况只有一层）
 int base(int stack[], int currentLevel, int levelDiff)
 {
     int b = currentLevel;

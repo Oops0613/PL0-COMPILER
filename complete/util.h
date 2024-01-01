@@ -111,7 +111,7 @@ typedef struct
 } instruction;
 instruction code[CXMAX];                 
 
-int level = 0; // 嵌套级别。函数可以嵌套，主程序是0层，在主程序中定义的过程是1层，最多三层
+int level = 0; // 过程的嵌套级别。主程序是0层，但本编译器没有PROCEDURE，因此无用。
 int cx = 0;	   // 下一条指令的地址
 int tx = 0;	   // 符号表table的索引
 int dx = 0;	   // data allocation index

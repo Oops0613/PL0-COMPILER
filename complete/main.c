@@ -1,8 +1,8 @@
 #include "parser.h"
 int main()
 {
-    fp = fopen("D:\\VSCodeProjects\\compiler\\source.txt", "r");
-    fw =fopen("D:\\VSCodeProjects\\compiler\\result.txt", "w");
+    fp = fopen("D:\\VSCodeProjects\\PL0-COMPILER\\source.txt", "r");
+    fw =fopen("D:\\VSCodeProjects\\PL0-COMPILER\\result.txt", "w");
     if (!fp)
     {
         printf("File dosen't exist");

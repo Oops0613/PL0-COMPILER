@@ -4,7 +4,7 @@ VAR x,y,z;      {这是一句注释}
 BEGIN  
        x:=1; 
        y:=2;
-       z:=3; 
+       z:=3;
        WHILE x<a DO x:=x+1; 
        IF y>0 THEN y:=y-1;
        IF x=y THEN x:=0; 
