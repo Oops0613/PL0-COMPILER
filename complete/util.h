@@ -96,7 +96,7 @@ typedef struct//变量有内外层之分
 {
 	char name[MAXIDLEN + 1]; // 变量名
 	int kind;	   // 变量
-	short level;   // 嵌套级别/层次差
+	short level;   // 嵌套级别/层次差（没用）
 	short address; // 存储位置的相对地址
 } mask;
 comtab table[TXMAX]; // 符号表table[500]，存储常量、变量
@@ -131,7 +131,7 @@ char *err_msg[] =
 		/*  1 */ "Found ':=' when expecting '='.",
 		/*  2 */ "There must be a number to follow '='.",
 		/*  3 */ "There must be an '=' to follow the identifier.",
-		/*  4 */ "There must be an identifier to follow 'const', 'var', or 'procedure'.",
+		/*  4 */ "There must be an identifier to follow 'const' or 'var'.",
 		/*  5 */ "Missing ',' or ';'.",
 		/*  6 */ "",
 		/*  7 */ "",
@@ -141,8 +141,8 @@ char *err_msg[] =
 		/* 11 */ "Undeclared identifier.",
 		/* 12 */ "Illegal assignment.",
 		/* 13 */ "':=' expected.",
-		/* 14 */ "There must be an identifier to follow the 'call'.",
-		/* 15 */ "A constant or variable can not be called.",
+		/* 14 */ "",
+		/* 15 */ "",
 		/* 16 */ "'then' expected.",
 		/* 17 */ "';' or 'end' expected.",
 		/* 18 */ "'do' expected.",

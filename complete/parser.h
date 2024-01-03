@@ -121,7 +121,7 @@ void factor()
             {
             case ID_CONSTANT:
                 gen(LIT, 0, table[i].value); // 把常量放到栈顶
-                printf("%s\n",id);
+                //printf("%s\n",id);
                 break;
             case ID_VARIABLE:
                 mk = (mask *)&table[i];
@@ -368,10 +368,10 @@ void listcode(int from, int to)
     int v_cnt=0;//已产生的变量个数
     char* opr="=";//当前存储的运算符
     
-    printf("listcode:\n");
+    //printf("listcode:\n");
     for (int i = from; i < to; i++)
     {
-        printf("%5d %s\t%d\t%d\n", i, mnemonic[code[i].f], code[i].l, code[i].a);
+        //printf("%5d %s\t%d\t%d\n", i, mnemonic[code[i].f], code[i].l, code[i].a);
         p=mnemonic[code[i].f];
         if(strcmp(p,"JMP")==0){//无条件跳转
             fprintf(fw,"%d ",c_cnt++);
@@ -470,15 +470,15 @@ void listcode(int from, int to)
     fprintf(fw,"\n");
 }
 //代码有多层时使用（实际情况只有一层）
-int base(int stack[], int currentLevel, int levelDiff)
+/*int base(int stack[], int currentLevel, int levelDiff)
 {
     int b = currentLevel;
     while (levelDiff--)
         b = stack[b];
     return b;
-}
+}*/
 
-void interpret()
+/*void interpret()
 {
     int pc = 0;           // program counter
     int stack[STACKSIZE]; // 假想栈
@@ -576,7 +576,7 @@ void interpret()
     } while (pc);
 
     printf("\nEnd executing PL/0 program.\n");
-}
+}*/
 
 // <分程序>→[<常量说明>][<变量说明>]<语句部分>
 // 一遍扫描，语法分析、语义分析、目标代码生成 一起完成
@@ -587,7 +587,7 @@ void block()
     int savedTx;
     int savedCx = cx;
     dx = 3; // 分配3个单元供运行期间存放静态链SL、动态链DL和返回地址RA
-    printf("%d.gen JMP\n",savedCx);
+    //printf("%d.gen JMP\n",savedCx);
     gen(JMP, 0, 0); // 跳转到分程序的开始位置，由于当前还没有知道在何处开始，所以jmp的目标暂时填为0
     // mask *mk = (mask *)&table[tx]; 
     // mk->address = cx; // 记录刚刚在符号表中记录的过程的address，cx是下一条指令的地址
@@ -657,7 +657,7 @@ void block()
     }
     // 后续部分主要用于代码生成
     code[savedCx].a = cx; // 这时cx正好指向语句的开始位置，这个位置正是前面的 jmp 指令需要跳转到的位置
-    printf("%d.JMP to %d\n",savedCx, cx);
+    //printf("%d.JMP to %d\n",savedCx, cx);
     // mk->address = cx;
     gen(INT, 0, dx); // 为主程序在运行栈中开辟数据区，开辟 dx 个空间，作为这个分程序的第1条指令
     statement(); // 语句

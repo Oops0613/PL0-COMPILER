@@ -26,9 +26,9 @@ int main()
     }
     if (err)
         printf("There are %d error(s) in PL/0 program.\n", err);
-    else
-        interpret();
-    listcode(1, cx); // 输出目标代码
+    //else
+        //interpret();
+    listcode(1, cx); // 输出中间代码
     fclose(fp);
     fclose(fw);
     return 0;
