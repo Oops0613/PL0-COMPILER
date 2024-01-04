@@ -9,10 +9,9 @@
 #define MAXIDLEN 10		 // 标识符的长度上限
 #define TXMAX 500		 // 标识符的最大数量
 #define MAXLEVEL 3		 // 最大层次数
-#define MAXINS 8		 // 指令（中间代码）的最大数量
+#define MAXINS 8		 // 类汇编码的种数
 #define CXMAX 500		 // 类汇编码的数量上限
 #define MAXADDRESS 32767 // maximum address
-//#define STACKSIZE 200	 // 栈大小
 
 char ch = ' '; // 最后一个读取到的字符
 FILE *fp;	   // 输入文件指针
