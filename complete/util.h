@@ -9,10 +9,9 @@
 #define MAXIDLEN 10		 // 标识符的长度上限
 #define TXMAX 500		 // 标识符的最大数量
 #define MAXLEVEL 3		 // 最大层次数
-#define MAXINS 8		 // 指令（中间代码）的最大数量
-#define CXMAX 500		 // 汇编代码的数量上限
+#define MAXINS 8		 // 类汇编码的种数
+#define CXMAX 500		 // 类汇编码的数量上限
 #define MAXADDRESS 32767 // maximum address
-#define STACKSIZE 200	 // 栈大小
 
 char ch = ' '; // 最后一个读取到的字符
 FILE *fp;	   // 输入文件指针
@@ -96,7 +95,7 @@ typedef struct//变量有内外层之分
 {
 	char name[MAXIDLEN + 1]; // 变量名
 	int kind;	   // 变量
-	short level;   // 嵌套级别/层次差
+	short level;   // 嵌套级别/层次差（没用）
 	short address; // 存储位置的相对地址
 } mask;
 comtab table[TXMAX]; // 符号表table[500]，存储常量、变量
@@ -111,7 +110,7 @@ typedef struct
 } instruction;
 instruction code[CXMAX];                 
 
-int level = 0; // 嵌套级别。函数可以嵌套，主程序是0层，在主程序中定义的过程是1层，最多三层
+int level = 0; // 过程的嵌套级别。主程序是0层，但本编译器没有PROCEDURE，因此无用。
 int cx = 0;	   // 下一条指令的地址
 int tx = 0;	   // 符号表table的索引
 int dx = 0;	   // data allocation index
@@ -131,7 +130,7 @@ char *err_msg[] =
 		/*  1 */ "Found ':=' when expecting '='.",
 		/*  2 */ "There must be a number to follow '='.",
 		/*  3 */ "There must be an '=' to follow the identifier.",
-		/*  4 */ "There must be an identifier to follow 'const', 'var', or 'procedure'.",
+		/*  4 */ "There must be an identifier to follow 'const' or 'var'.",
 		/*  5 */ "Missing ',' or ';'.",
 		/*  6 */ "",
 		/*  7 */ "",
@@ -141,8 +140,8 @@ char *err_msg[] =
 		/* 11 */ "Undeclared identifier.",
 		/* 12 */ "Illegal assignment.",
 		/* 13 */ "':=' expected.",
-		/* 14 */ "There must be an identifier to follow the 'call'.",
-		/* 15 */ "A constant or variable can not be called.",
+		/* 14 */ "",
+		/* 15 */ "",
 		/* 16 */ "'then' expected.",
 		/* 17 */ "';' or 'end' expected.",
 		/* 18 */ "'do' expected.",

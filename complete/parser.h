@@ -85,10 +85,10 @@ void variable(void)
     }
 }
 
-// 生成汇编指令 (generates (assembles) an instruction.)
+// 生成类汇编指令（基于栈）
 void gen(int x, int y, int z)
-{ //生成汇编指令
-    if (cx > CXMAX)
+{
+    if (cx > CXMAX)//指令条数太多
     { // cx > 500
         printf("Fatal Error: Program too long.\n");
         exit(1);
@@ -120,8 +120,8 @@ void factor()
             switch (table[i].kind)
             {
             case ID_CONSTANT:
-                gen(LIT, 0, table[i].value); // 把常数放到栈顶
-                printf("%s\n",id);
+                gen(LIT, 0, table[i].value); // 把常量放到栈顶
+                //printf("%s\n",id);
                 break;
             case ID_VARIABLE:
                 mk = (mask *)&table[i];
@@ -139,15 +139,12 @@ void factor()
             num = 0;
         }
         gen(LIT, 0, num); // 把常数放到栈顶
-        //int index=locate(id);
-        printf("%s\n",id);
-        //table[index].value=num;
         getsym();
     }
     else if (sym == SYM_LPAREN) // (
     {
         getsym();
-        expression();          // 递归调用表达式
+        expression();          
         if (sym == SYM_RPAREN) // )
         {
             getsym();
@@ -171,11 +168,11 @@ void term()
         factor();
         if (mulop == SYM_TIMES)
         {
-            gen(OPR, 0, OPR_MUL); // 将栈顶和次栈顶进行运算
+            gen(OPR, 0, OPR_MUL); // 将栈顶和次栈顶进行乘运算
         }
         else
         {
-            gen(OPR, 0, OPR_DIV);
+            gen(OPR, 0, OPR_DIV);//除
         }
     }
 }
@@ -183,7 +180,7 @@ void term()
 // <表达式>→[+|-]项|<表达式><加法运算符><项>
 void expression()
 {
-    int addop;
+    int addop;//正负号
     if (sym == SYM_PLUS || sym == SYM_MINUS)
     {
         addop = sym;
@@ -191,7 +188,7 @@ void expression()
         factor();
         if (addop == SYM_MINUS)
         {
-            gen(OPR, 0, OPR_NEG);
+            gen(OPR, 0, OPR_NEG);//取相反数
         }
         term();
     }
@@ -206,11 +203,11 @@ void expression()
         term();
         if (addop == SYM_PLUS)
         {
-            gen(OPR, 0, OPR_ADD);
+            gen(OPR, 0, OPR_ADD);//加
         }
         else
         {
-            gen(OPR, 0, OPR_MIN);
+            gen(OPR, 0, OPR_MIN);//减
         }
     }
 }
@@ -228,7 +225,7 @@ void condition()
         case SYM_EQU: //==
             gen(OPR, 0, OPR_EQU);
             break;
-        case SYM_NEQ: //!=
+        case SYM_NEQ: //<>
             gen(OPR, 0, OPR_NEQ);
             break;
         case SYM_LES: //<
@@ -244,7 +241,7 @@ void condition()
             gen(OPR, 0, OPR_GEQ);
             break;
         default:
-            error(20);
+            error(20);//缺少运算符
         }
 }
 
@@ -295,10 +292,10 @@ void statement()
         savedCx = cx;
         gen(JPC, 0, 0);   // 条件转移指令，栈顶为非真时跳转到a
         statement();      // 递归调用
-        code[savedCx].a = cx; // 设置刚刚那个条件转移指令的跳转位置
+        code[savedCx].a = cx; // 设置刚刚那个条件转移指令的跳转位置（回填）
     }
     else if (sym == SYM_BEGIN)
-    { //<复合语句>→BEGIN<语句>{；<语句>}END
+    { //<复合语句>→BEGIN<语句>{;<语句>}END
         getsym();
         statement(); // 递归调用
         while (sym == SYM_SEMICOLON)
@@ -339,10 +336,11 @@ void statement()
             error(18); // 'do' expected.
         }
         statement();          // 分析do后的语句块
-        gen(JMP, 0, savedCx); // 无条件转移指令，跳转到cx1，再次进行逻辑判断
-        code[savedCx_].a = cx; // 填写刚才那个条件转移指令的跳转位置，while循环结束
+        gen(JMP, 0, savedCx); // 无条件转移指令，跳转到cx1（while的起始），再次进行逻辑判断
+        code[savedCx_].a = cx; // 回填刚才那个条件转移指令的跳转位置，while循环结束
     }
 }
+
 //供条件跳转使用
 //Map<汇编代码序号,三地址代码序号>
 int mapping(int map[],int source){
@@ -352,6 +350,7 @@ int mapping(int map[],int source){
     }
     return i;
 }
+
 void listcode(int from, int to)
 {
     int c_cnt=1;//三地址代码的数量
@@ -371,32 +370,16 @@ void listcode(int from, int to)
     int v_cnt=0;//已产生的变量个数
     char* opr="=";//当前存储的运算符
     
-    printf("listcode:\n");
+    //printf("listcode:\n");
     for (int i = from; i < to; i++)
     {
-        printf("%5d %s\t%d\t%d\n", i, mnemonic[code[i].f], code[i].l, code[i].a);
+        //printf("%5d %s\t%d\t%d\n", i, mnemonic[code[i].f], code[i].l, code[i].a);
         p=mnemonic[code[i].f];
         if(strcmp(p,"JMP")==0){//无条件跳转
             fprintf(fw,"%d ",c_cnt++);
             fprintf(fw,"(j,_,_,%d)\n",mapping(map,code[i].a));
         }
         else if(strcmp(p,"LIT")==0){//把常数放到栈顶（准备运算）
-            // if(strcmp(mnemonic[code[i-1].f],"OPR")==0){//还未结束，只计算了表达式的一部分
-            //     printf("(%s,",opr);
-            //     if((args[1].kind==1)){//变量
-            //         printf("t%d,",temp[args[1].value]);
-            //     }
-            //     else{//常量
-            //         printf("%d,",args[1].value);
-            //     }
-            //     if((args[2].kind==1)){//变量
-            //         printf("t%d,",temp[args[2].value]);
-            //     }
-            //     else{//常量
-            //         printf("%d,",args[2].value);
-            //     }
-            //     if()
-            // }
             if(cur>2){
                 cur=2;
                 args[1].value=args[2].value;
@@ -418,7 +401,7 @@ void listcode(int from, int to)
                 if(temp[code[i].a]==0){//只有第一次进行复制时进行下标转换
                     temp[code[i].a]=++v_cnt;
                 }
-                fprintf(fw,"(%s,%d,_,t%d)\n",opr,args[1].value,temp[code[i].a]);
+                fprintf(fw,"(=,%d,_,t%d)\n",args[1].value,temp[code[i].a]);
             }
             else if(strcmp(mnemonic[code[i-1].f],"OPR")==0){//表达式求值，赋值或条件运算
                 
@@ -430,19 +413,27 @@ void listcode(int from, int to)
                 else{//常量
                     fprintf(fw,"%d,",args[1].value);
                 }
-                if((args[2].kind==1)){//变量
-                    fprintf(fw,"t%d,",temp[args[2].value]);
+                if(code[i-1].a==OPR_NEG){//单目运算
+                    fprintf(fw,"_,");
                 }
-                else{//常量
-                    fprintf(fw,"%d,",args[2].value);
+                else{
+                    if((args[2].kind==1)){//变量
+                        fprintf(fw,"t%d,",temp[args[2].value]);
+                    }
+                    else{//常量
+                        fprintf(fw,"%d,",args[2].value);
+                    }
                 }
+                
                 if(strcmp(p,"JPC")==0){
                     fprintf(fw,"%d)\n",mapping(map,code[i].a));
                 }
                 else{
                     fprintf(fw,"t%d)\n",temp[code[i].a]);
                 }
-                
+            }
+            else if(strcmp(mnemonic[code[i-1].f],"LOD")==0){//变量:=变量
+                fprintf(fw,"(=,t%d,_,t%d)\n",temp[code[i-1].a],temp[code[i].a]);
             }
         }
         else if(strcmp(p,"OPR")==0){
@@ -454,6 +445,9 @@ void listcode(int from, int to)
             case OPR_MIN:
                 opr="-";
                 break;
+            case OPR_NEG:
+                opr="-";
+                break;
             case OPR_MUL:
                 opr="*";
                 break;
@@ -463,7 +457,7 @@ void listcode(int from, int to)
             case OPR_EQU:
                 opr="=";
                 break;
-            case OPR_NEG:
+            case OPR_NEQ:
                 opr="<>";
                 break;
             case OPR_LES:
@@ -481,130 +475,11 @@ void listcode(int from, int to)
             default:
                 break;
             }
-            // printf("\tt%d\t%d",args[1],args[2]);
-            // if(strcmp(mnemonic[code[i+1].f],"STO")==0){
-            //     printf("\tt%d",code[i+1].a);
-            // }
-            // else if(strcmp(mnemonic[code[i+1].f],"JPC")==0){
-            //     printf("\t%d",code[i+1].a);
-            // }
-            // printf("\n");
         }
-        // if(cur_index==-1){
-        //     cur_index=1;
-        // }
     }
     fprintf(fw,"\n");
 }
 
-int base(int stack[], int currentLevel, int levelDiff)
-{
-    int b = currentLevel;
-
-    while (levelDiff--)
-        b = stack[b];
-    return b;
-}
-
-void interpret()
-{
-    int pc = 0;           // program counter
-    int stack[STACKSIZE]; // 假想栈
-    int top = 0;          // top of stack
-    int b = 1;
-    instruction i; // instruction register
-
-    printf("Begin executing PL/0 program.\n");
-    
-    stack[1] = stack[2] = stack[3] = 0;
-    do
-    {
-        printf("%d_", pc);
-        i = code[pc++];
-        switch (i.f)
-        {
-        case LIT:
-            stack[++top] = i.a;
-            break;
-        case OPR:
-            switch (i.a) // operator
-            {
-            case OPR_RET:
-                top = b - 1;
-                pc = stack[top + 3];
-                b = stack[top + 2];
-                break;
-            case OPR_NEG:
-                stack[top] = -stack[top];
-                break;
-            case OPR_ADD:
-                top--;
-                stack[top] += stack[top + 1];
-                break;
-            case OPR_MIN:
-                top--;
-                stack[top] -= stack[top + 1];
-                break;
-            case OPR_MUL:
-                top--;
-                stack[top] *= stack[top + 1];
-                break;
-            case OPR_DIV:
-                top--;
-                if (stack[top + 1] == 0)
-                {
-                    fprintf(stderr, "Runtime Error: Divided by zero.\n");
-                    fprintf(stderr, "Program terminated.\n");
-                    continue;
-                }
-                stack[top] /= stack[top + 1];
-                break;
-            case OPR_EQU:
-                top--;
-                stack[top] = stack[top] == stack[top + 1];
-                break;
-            case OPR_NEQ:
-                top--;
-                stack[top] = stack[top] != stack[top + 1];
-            case OPR_LES:
-                top--;
-                stack[top] = stack[top] < stack[top + 1];
-                break;
-            case OPR_GEQ:
-                top--;
-                stack[top] = stack[top] >= stack[top + 1];
-            case OPR_GTR:
-                top--;
-                stack[top] = stack[top] > stack[top + 1];
-                break;
-            case OPR_LEQ:
-                top--;
-                stack[top] = stack[top] <= stack[top + 1];
-            }
-            break;
-        case LOD:
-            stack[++top] = stack[base(stack, b, i.l) + i.a];
-            break;
-        case STO:
-            stack[base(stack, b, i.l) + i.a] = stack[top];
-            top--;
-            break;
-        case INT:
-            top += i.a;
-            break;
-        case JMP:
-            pc = i.a;
-            break;
-        case JPC:
-            if (stack[top] == 0)
-                pc = i.a;
-            top--;
-            break;
-        }
-    } while (pc);
-
-    printf("\nEnd executing PL/0 program.\n");
-}
 
 // <分程序>→[<常量说明>][<变量说明>]<语句部分>
 // 一遍扫描，语法分析、语义分析、目标代码生成 一起完成
@@ -615,7 +490,7 @@ void block()
     int savedTx;
     int savedCx = cx;
     dx = 3; // 分配3个单元供运行期间存放静态链SL、动态链DL和返回地址RA
-    printf("%d.gen JMP\n",savedCx);
+    //printf("%d.gen JMP\n",savedCx);
     gen(JMP, 0, 0); // 跳转到分程序的开始位置，由于当前还没有知道在何处开始，所以jmp的目标暂时填为0
     // mask *mk = (mask *)&table[tx]; 
     // mk->address = cx; // 记录刚刚在符号表中记录的过程的address，cx是下一条指令的地址
@@ -685,7 +560,7 @@ void block()
     }
     // 后续部分主要用于代码生成
     code[savedCx].a = cx; // 这时cx正好指向语句的开始位置，这个位置正是前面的 jmp 指令需要跳转到的位置
-    printf("%d.JMP to %d\n",savedCx, cx);
+    //printf("%d.JMP to %d\n",savedCx, cx);
     // mk->address = cx;
     gen(INT, 0, dx); // 为主程序在运行栈中开辟数据区，开辟 dx 个空间，作为这个分程序的第1条指令
     statement(); // 语句

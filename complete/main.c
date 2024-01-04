@@ -1,8 +1,8 @@
 #include "parser.h"
 int main()
 {
-    fp = fopen("D:\\VSCodeProjects\\compiler\\source.txt", "r");
-    fw =fopen("D:\\VSCodeProjects\\compiler\\result.txt", "w");
+    fp = fopen("D:\\VSCodeProjects\\PL0-COMPILER\\source1.txt", "r");
+    fw =fopen("D:\\VSCodeProjects\\PL0-COMPILER\\result.txt", "w");
     if (!fp)
     {
         printf("File dosen't exist");
@@ -26,9 +26,9 @@ int main()
     }
     if (err)
         printf("There are %d error(s) in PL/0 program.\n", err);
-    else
-        interpret();
-    listcode(1, cx); // 输出目标代码
+    //else
+        //interpret();
+    listcode(1, cx); // 输出中间代码
     fclose(fp);
     fclose(fw);
     return 0;
