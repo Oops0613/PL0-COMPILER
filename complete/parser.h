@@ -340,6 +340,7 @@ void statement()
         code[savedCx_].a = cx; // 回填刚才那个条件转移指令的跳转位置，while循环结束
     }
 }
+
 //供条件跳转使用
 //Map<汇编代码序号,三地址代码序号>
 int mapping(int map[],int source){
@@ -349,6 +350,7 @@ int mapping(int map[],int source){
     }
     return i;
 }
+
 void listcode(int from, int to)
 {
     int c_cnt=1;//三地址代码的数量
@@ -399,7 +401,7 @@ void listcode(int from, int to)
                 if(temp[code[i].a]==0){//只有第一次进行复制时进行下标转换
                     temp[code[i].a]=++v_cnt;
                 }
-                fprintf(fw,"(%s,%d,_,t%d)\n",opr,args[1].value,temp[code[i].a]);
+                fprintf(fw,"(=,%d,_,t%d)\n",args[1].value,temp[code[i].a]);
             }
             else if(strcmp(mnemonic[code[i-1].f],"OPR")==0){//表达式求值，赋值或条件运算
                 
@@ -411,19 +413,24 @@ void listcode(int from, int to)
                 else{//常量
                     fprintf(fw,"%d,",args[1].value);
                 }
-                if((args[2].kind==1)){//变量
-                    fprintf(fw,"t%d,",temp[args[2].value]);
+                if(code[i-1].a==OPR_NEG){//单目运算
+                    fprintf(fw,"_,");
                 }
-                else{//常量
-                    fprintf(fw,"%d,",args[2].value);
+                else{
+                    if((args[2].kind==1)){//变量
+                        fprintf(fw,"t%d,",temp[args[2].value]);
+                    }
+                    else{//常量
+                        fprintf(fw,"%d,",args[2].value);
+                    }
                 }
+                
                 if(strcmp(p,"JPC")==0){
                     fprintf(fw,"%d)\n",mapping(map,code[i].a));
                 }
                 else{
                     fprintf(fw,"t%d)\n",temp[code[i].a]);
                 }
-                
             }
             else if(strcmp(mnemonic[code[i-1].f],"LOD")==0){//变量:=变量
                 fprintf(fw,"(=,t%d,_,t%d)\n",temp[code[i-1].a],temp[code[i].a]);
@@ -438,6 +445,9 @@ void listcode(int from, int to)
             case OPR_MIN:
                 opr="-";
                 break;
+            case OPR_NEG:
+                opr="-";
+                break;
             case OPR_MUL:
                 opr="*";
                 break;
@@ -447,7 +457,7 @@ void listcode(int from, int to)
             case OPR_EQU:
                 opr="=";
                 break;
-            case OPR_NEG:
+            case OPR_NEQ:
                 opr="<>";
                 break;
             case OPR_LES:

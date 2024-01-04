@@ -1,0 +1,12 @@
+PROGRAM test
+CONST a=3;
+VAR x,y,z;
+BEGIN
+       x:=-1;
+       y:=2;
+       z:=3;
+       WHILE x<a DO x:=x+1;
+       IF y>0 THEN y:=y*2;
+       IF x<>y THEN x:=-5;
+       y:=y/x;
+END

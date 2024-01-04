@@ -1,7 +1,7 @@
 #include "parser.h"
 int main()
 {
-    fp = fopen("D:\\VSCodeProjects\\PL0-COMPILER\\source.txt", "r");
+    fp = fopen("D:\\VSCodeProjects\\PL0-COMPILER\\source1.txt", "r");
     fw =fopen("D:\\VSCodeProjects\\PL0-COMPILER\\result.txt", "w");
     if (!fp)
     {
